@@ -1,8 +1,10 @@
+import os
 import json
 import requests
 from forever import keep_alive
 from urllib.request import urlopen
 import time
+token = os.environ['token']
 class endpoints:
     ac = "https://www.epicgames.com/id/logout?redirectUrl=https%3A%2F%2Fwww.epicgames.com%2Fid%2Flogin%3FredirectUrl%3Dhttps%253A%252F%252Fwww.epicgames.com%252Fid%252Fapi%252Fredirect%253FclientId%253Dec684b8c687f479fadea3cb2ad83f5c6%2526responseType%253Dcode"
     token = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
@@ -47,7 +49,7 @@ def getTokenFromLink(url: str):
   # print the json response
   print(data_json)
 
-gtResult = getToken("e0e7792c5317466db631e8263c3503c5")
+gtResult = getToken(token)
 keep_alive()
 while True:
   if not gtResult:
