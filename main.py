@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import schedule, random
 from forever import keep_alive
 from urllib.request import urlopen
 import time
@@ -48,10 +49,10 @@ def getTokenFromLink(url: str):
     
   # print the json response
   print(data_json)
-
-gtResult = getToken(token)
-keep_alive()
-while True:
+def claimReward(token: str):
+  print('Shop updated, starting random countdown to make it look legit')
+  time.sleep(random.randint(0,3600))
+  gtResult = getToken(token)
   if not gtResult:
       exit()
   else:
@@ -60,7 +61,12 @@ while True:
               "Content-Type": "application/json"
       }
       r = requests.post(endpoints.reward.format(gtResult[1]), headers=h, data="{}")
-      #print(r.text)
+      print(r.text)
       print("Should be claimed. idk if you already claimed it")
-  time.sleep(86400)
+keep_alive()
+schedule.every().day.at("00:00:00").do(claimReward,token)
+while True:
+  schedule.run_pending()
+
+  
 
