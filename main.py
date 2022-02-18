@@ -1,11 +1,13 @@
 import os
 import json
 import requests
-import schedule, random
 from forever import keep_alive
 from urllib.request import urlopen
 import time
 token = os.environ['token']
+webhook = os.environ['webhook']
+global renew
+renew = ""
 class endpoints:
     ac = "https://www.epicgames.com/id/logout?redirectUrl=https%3A%2F%2Fwww.epicgames.com%2Fid%2Flogin%3FredirectUrl%3Dhttps%253A%252F%252Fwww.epicgames.com%252Fid%252Fapi%252Fredirect%253FclientId%253Dec684b8c687f479fadea3cb2ad83f5c6%2526responseType%253Dcode"
     token = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
@@ -49,10 +51,9 @@ def getTokenFromLink(url: str):
     
   # print the json response
   print(data_json)
-def claimReward(token: str):
-  print('Shop updated, starting random countdown to make it look legit')
-  time.sleep(random.randint(0,3600))
-  gtResult = getToken(token)
+def claimReward(gtResult):
+
+  
   if not gtResult:
       exit()
   else:
@@ -60,13 +61,36 @@ def claimReward(token: str):
               "Authorization": f"bearer {gtResult[0]}",
               "Content-Type": "application/json"
       }
-      r = requests.post(endpoints.reward.format(gtResult[1]), headers=h, data="{}")
-      print(r.text)
+      requests.post(endpoints.reward.format(gtResult[1]), headers=h, data="{}")
       print("Should be claimed. idk if you already claimed it")
 keep_alive()
-schedule.every().day.at("00:00:00").do(claimReward,token)
+claimed = False
+claims = 0
+claimedAt = 1642464000
+reminderAt = 1642464000
+gtResult = getToken(token)
 while True:
-  schedule.run_pending()
-
+  now = time.time()
+  current_time = time.strftime("%H")
+  if int(now) - reminderAt > 21600:
+    data = {"content": '6 Hourly reminder on ' + time.strftime("%D%H%M")}
+    response = requests.post(url=webhook, json=data)
+    reminderAt = int(now)
+    time.sleep(1000)
+  if claimed:
+    if int(now) - int(claimedAt) > 86400 or current_time == "00":
+      claimed = False
+      data = {"content": '24 hours / Shop Reset - Claiming soon \n at ' + time.strftime("%D %H:%M:%S")}
+      response = requests.post(url=webhook, json=data)
+      time.sleep(200)
+    else:
+      time.sleep(1000)
+  if claimed == False:
+    claimReward(gtResult)
+    claimedAt = int(time.time())
+    data = {"content": 'Succesfully Claimed at ' + time.strftime("%D %H:%M:%S")}
+    response = requests.post(url=webhook, json=data)
+    claims += 1
+    claimed = True
+    time.sleep(1000)
   
-
